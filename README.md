@@ -1,0 +1,1 @@
+simple frontend for testing argent wallet

@@ -1,26 +1,32 @@
-<script>
-    import { connect, disconnect } from 'starknetkit';
-    import { WebWalletConnector } from "starknetkit/webwallet";
-    import { onMount } from 'svelte';
-    
-    let public_key = 'Loading...';
+<script lang="ts">
+    import { wallet } from "starknet";
+    import { connect, disconnect } from "starknetkit"
+    import { WebWalletConnector } from "starknetkit/webwallet"
     let isConnected = false;
+    let node_url = 'Loading...';
+    let chain_id = 'Loading...';
+
     async function connectWallet() {
-        const wallet = await connect({
-            connectors: [
-                new WebWalletConnector({
-                    url: "https://web.argent.xyz",
-                }),
-            ],
-            modalTheme: "light"
-        });
-        let account = await wallet.connector.account();
-        console.log(wallet);
-        if (wallet.wallet.isConnected) {
+    const { wallet } = await connect({
+        connectors: [
+            new WebWalletConnector({
+            url: "https://web.argent.xyz",
+            }),
+        ],
+    })
+    if (wallet.isConnected) {
             isConnected = true;
+            node_url = wallet.provider.channel.nodeUrl;
+            chain_id = wallet.provider.channel.chainId;
         } else {
-            public_key = 'Failed to connect';
+
+            chain_id = 'Failed to connect';
         }
+        wallet.provider.channel.setChainId("0x534e5f5345504f4c4941");
+        wallet.provider.channel.nodeUrl = "http://localhost:5050";
+
+        chain_id = await wallet.provider.getChainId();
+        node_url = await wallet.provider.channel.nodeUrl;
     }
 </script>
 
@@ -57,7 +63,8 @@
 
 <div class="wallet">
     <h1>Argent Wallet</h1>
-    <p><strong>Public key:</strong> {public_key}</p>
+    <p><strong>Chain id:</strong> {chain_id}</p>
+    <p><strong>Node url:</strong> {node_url}</p>
     <button on:click={connectWallet}>Connect Wallet</button>
     <div class="status">
         {#if isConnected}
